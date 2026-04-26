@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Admin Panel | MS Care Hospital</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Marathi:wght@400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="mesh"></div>
+
+  <section id="lockScreen" class="lock-screen">
+    <div class="lock-card glass">
+      <div class="lock-icon">🔐</div>
+      <h1>Secure Admin Panel</h1>
+      <p>फक्त हॉस्पिटल admin साठी. Password टाकून appointments पहा.</p>
+      <input id="adminPass" type="password" placeholder="Admin Password" />
+      <button class="btn primary glow full" onclick="loginAdmin()">Login करा</button>
+      <p id="errorMsg" class="error">चुकीचा password. पुन्हा प्रयत्न करा.</p>
+      <p style="font-size:12px;margin-top:16px;color:#64748b">Demo Password: <b>ms1234</b></p>
+    </div>
+  </section>
+
+  <section id="dashboard" style="display:none">
+    <nav class="navbar glass">
+      <div class="logo"><span class="logo-mark">✚</span><div><b>Admin Panel</b><small>MS Care Hospital</small></div></div>
+      <div class="nav-links">
+        <a href="index.html">Website</a>
+        <a href="#" onclick="logoutAdmin()">Logout</a>
+      </div>
+    </nav>
+
+    <main class="admin-wrap">
+      <div class="admin-head">
+        <div>
+          <h1>अपॉइंटमेंट्स</h1>
+          <p>नवीन booking details इथे दिसतील.</p>
+        </div>
+        <button class="btn danger" onclick="clearAll()">Delete All</button>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>बुकिंग वेळ</th>
+              <th>रुग्ण</th>
+              <th>मोबाईल</th>
+              <th>डॉक्टर</th>
+              <th>विभाग</th>
+              <th>भेटण्याची वेळ</th>
+              <th>संदेश</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div id="empty" class="empty">अजून कोणतीही अपॉइंटमेंट नाही.</div>
+      </div>
+    </main>
+  </section>
+
+  <script>
+    const ADMIN_PASSWORD = "ms1234";
+
+    function loginAdmin(){
+      const pass = document.getElementById("adminPass").value;
+      if(pass === ADMIN_PASSWORD){
+        sessionStorage.setItem("adminLoggedIn", "yes");
+        showDashboard();
+      } else {
+        document.getElementById("errorMsg").style.display = "block";
+      }
+    }
+
+    function showDashboard(){
+      document.getElementById("lockScreen").style.display = "none";
+      document.getElementById("dashboard").style.display = "block";
+      loadAppointments();
+    }
+
+    function logoutAdmin(){
+      sessionStorage.removeItem("adminLoggedIn");
+      location.reload();
+    }
+
+    function loadAppointments(){
+      const data = JSON.parse(localStorage.getItem("appointments") || "[]");
+      const tbody = document.getElementById("tbody");
+      const empty = document.getElementById("empty");
+      tbody.innerHTML = "";
+      empty.style.display = data.length ? "none" : "block";
+
+      data.forEach(a => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td data-label="बुकिंग वेळ">${a.createdAt || ""}</td>
+          <td data-label="रुग्ण">${a.name || ""}</td>
+          <td data-label="मोबाईल">${a.phone || ""}</td>
+          <td data-label="डॉक्टर">${a.doctor || ""}</td>
+          <td data-label="विभाग">${a.department || ""}</td>
+          <td data-label="भेटण्याची वेळ">${a.date || ""} ${a.time || ""}</td>
+          <td data-label="संदेश">${a.message || "-"}</td>
+          <td data-label="Status"><span class="chip">${a.status || "नवीन"}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function clearAll(){
+      if(confirm("सगळ्या appointments delete करायच्या?")){
+        localStorage.removeItem("appointments");
+        loadAppointments();
+      }
+    }
+
+    document.getElementById("adminPass").addEventListener("keydown", function(e){
+      if(e.key === "Enter") loginAdmin();
+    });
+
+    if(sessionStorage.getItem("adminLoggedIn") === "yes"){
+      showDashboard();
+    }
+  </script>
+</body>
+</html>
