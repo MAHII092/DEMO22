@@ -1,6 +1,11 @@
 const form = document.getElementById("appointmentForm");
 const successMsg = document.getElementById("successMsg");
 
+// STEP 1: Google Apps Script deploy kelyavar Web App URL ithe paste kara.
+// Example:
+// const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxxxxxx/exec";
+const GOOGLE_SCRIPT_URL = "PASTE_YOUR_GOOGLE_SCRIPT_WEB_APP_URL_HERE";
+
 form.addEventListener("submit", async function(e) {
   e.preventDefault();
 
@@ -17,12 +22,16 @@ form.addEventListener("submit", async function(e) {
     createdAt: new Date().toLocaleString("mr-IN")
   };
 
+  // Demo/local admin panel sathi same browser madhe save
   const list = JSON.parse(localStorage.getItem("appointments") || "[]");
   list.unshift(appointment);
   localStorage.setItem("appointments", JSON.stringify(list));
 
-  const GOOGLE_SCRIPT_URL = ""; 
-  if (GOOGLE_SCRIPT_URL) {
+  // Real Google Sheet save + Email alert
+  if (
+    GOOGLE_SCRIPT_URL &&
+    GOOGLE_SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbxUVnScSaPIEfQ-om41iGh2u_tcmWD89g43e1z3ggXWmbCB2SbrpuKbTJytWacw3oQ9uA/exec"
+  ) {
     try {
       await fetch(GOOGLE_SCRIPT_URL, {
         method: "POST",
@@ -31,11 +40,12 @@ form.addEventListener("submit", async function(e) {
         body: JSON.stringify(appointment)
       });
     } catch (err) {
-      console.log("Sheet connection failed, local saved only.", err);
+      console.log("Google Sheet connection failed. Local save done.", err);
     }
   }
 
+  successMsg.innerText = "अपॉइंटमेंट book झाली ✅ Admin panel आणि Google Sheet मध्ये save होईल.";
   successMsg.style.display = "block";
   form.reset();
-  setTimeout(() => successMsg.style.display = "none", 4500);
+  setTimeout(() => successMsg.style.display = "none", 5000);
 });
